@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Loading... - NexStream</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- CORE STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent !important; font-family: 'SF Pro Display', sans-serif; user-select: none; }
+        
+        body { background-color: #000000; color: #ffffff; min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* HEADER & GLASSMORPHISM */
+        .hdr { 
+            position: fixed; top: 0; left: 0; right: 0; height: 70px; z-index: 1000; 
+            display: flex; align-items: flex-start; padding: 15px 5%; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%); 
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); 
+            -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%); 
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        }
+
+        .back-btn { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 38px; height: 38px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: all 0.2s ease; 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); outline: none;
+            color: #fff; font-size: 15px;
+        }
+        .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.15); }
+
+        /* MODERN SKELETON SHIMMER SYSTEM */
+        .skeleton {
+            background: #1a1a20;
+            background-image: linear-gradient(90deg, #1a1a20 0px, #2a2a32 40px, #1a1a20 80px);
+            background-size: 600px;
+            animation: shimmer-anim 1.5s infinite linear;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        @keyframes shimmer-anim {
+            0% { background-position: -300px 0; }
+            100% { background-position: 800px 0; }
+        }
+        .fade-in-content { animation: fadeInAnim 0.5s ease-in-out forwards; }
+        @keyframes fadeInAnim { from { opacity: 0; } to { opacity: 1; } }
+
+        /* HERO BACKGROUND TRAILER (ZOOM FIXED) */
+        .hero-trailer { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; z-index: 1; margin-bottom: -40px; }
+        .hero-trailer iframe { width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(1.35); }
+        .hero-trailer video, .hero-trailer img { width: 100%; height: 100%; border: none; object-fit: cover; pointer-events: none; }
+        .hero-fade { position: absolute; bottom: -2px; left: 0; right: 0; height: 50%; background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.8) 40%, transparent 100%); z-index: 2; pointer-events: none; }
+
+        /* CONTENT CONTAINER */
+        .details-container { padding: 0 5% 60px; position: relative; z-index: 10; }
+        
+        .m-title { font-size: clamp(28px, 7vw, 42px); font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; text-shadow: 0 4px 15px rgba(0,0,0,0.8); line-height: 1.1;}
+        .m-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: #e1e6eb; font-size: 13px; font-weight: 600; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+        
+        .meta-rating { display: flex; align-items: center; gap: 4px; color: #f5c518; }
+        .meta-rating i { font-size: 12px; }
+        
+        .q-badge { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-weight: 800; }
+
+        /* TAGS SYSTEM CSS */
+        .tags-wrapper { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; align-items: center; }
+        .tag-pill { background: rgba(255,255,255,0.12); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; display: inline-block;}
+        .tag-pill.hidden-tag { display: none; }
+        .tags-wrapper.expanded .tag-pill.hidden-tag { display: inline-block; }
+        .tag-more-btn { background: transparent; color: #8e8e93; cursor: pointer; transition: 0.2s; padding: 4px 6px; font-weight: 600; font-size: 12px;}
+        .tag-more-btn:active { transform: scale(0.95); }
+
+        /* SEASON TABS */
+        .season-tabs { display: flex; gap: 18px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); scrollbar-width: none; }
+        .season-tabs::-webkit-scrollbar { display: none; }
+        .season-btn { background: transparent; border: none; color: #8e8e93; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.3s; padding-bottom: 8px; position: relative; }
+        .season-btn.active { background: linear-gradient(90deg, #1F80E0, #e00073); -webkit-background-clip: text; color: transparent; }
+        .season-btn.active::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 100%; height: 3px; background: linear-gradient(90deg, #1F80E0, #e00073); border-radius: 3px 3px 0 0; }
+
+        /* EPISODE CARDS & ANIMATION */
+        #episode-list { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
+        .slide-enter { animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        @keyframes slideInRight { 0% { opacity: 0; transform: translateX(40px); } 100% { opacity: 1; transform: translateX(0); } }
+        .ep-card { display: flex; gap: 12px; background: rgba(20, 20, 25, 0.5); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; align-items: center; }
+        .ep-card:active { transform: scale(0.97); background: rgba(31, 128, 224, 0.1); border-color: rgba(31, 128, 224, 0.3);}
+        .ep-thumb { width: 105px; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; position: relative; flex-shrink: 0; background: #111; }
+        .ep-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s; }
+        .ep-card:hover .ep-thumb img { opacity: 1; }
+        .ep-thumb .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.8); font-size: 20px; text-shadow: 0 2px 8px rgba(0,0,0,0.8); transition: 0.2s; z-index: 2; }
+        .ep-card:hover .play-icon { color: #fff; transform: translate(-50%, -50%) scale(1.1); }
+        .ep-progress-bg { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.2); z-index: 3; display: none; }
+        .ep-progress-fill { position: absolute; bottom: 0; left: 0; height: 100%; background: #e00073; box-shadow: 0 0 6px rgba(224, 0, 115, 0.8); border-radius: 0 2px 2px 0; }
+        .ep-info { display: flex; flex-direction: column; justify-content: center; padding-right: 5px; width: 100%;}
+        .ep-num { font-size: 10px; color: #8e8e93; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;}
+        .ep-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ep-desc-text { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* ACTION ROW (COMPACT BUTTONS) */
+        .action-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; margin-bottom: 30px; width: 100%; max-width: 360px; }
+        
+        .btn-wrapper { position: relative; display: block; border-radius: 10px; overflow: hidden; padding: 2px; flex: 1; }
+        .btn-glow-bg { position: absolute; inset: 0; background: linear-gradient(90deg, #1F80E0 0%, #e00073 100%); z-index: 0; transition: opacity 0.3s; }
+        @keyframes rotateBorder { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        .btn-loader { position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; background: conic-gradient(transparent, transparent, transparent, #1F80E0, #e00073); animation: rotateBorder 1.2s linear infinite; z-index: 1; opacity: 0; transition: opacity 0.3s; transform-origin: center; }
+        
+        .watch-btn { position: relative; background: linear-gradient(90deg, #1F80E0 0%, #e00073 100%); color: white; border: none; width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; z-index: 2; transition: transform 0.2s, box-shadow 0.3s; box-shadow: 0 4px 15px rgba(224, 0, 115, 0.4);}
+        .watch-btn:active { transform: scale(0.96); }
+        
+        .btn-wrapper.loading .btn-glow-bg { opacity: 0; }
+        .btn-wrapper.loading .btn-loader { opacity: 1; }
+        .btn-wrapper.loading .watch-btn { background: #111; color: #8e8e93; pointer-events: none; box-shadow: none;}
+        
+        /* SLEEK MUTE & SHARE BUTTONS */
+        .circle-action-btn { 
+            width: 42px; height: 42px; border-radius: 10px; font-size: 15px; flex-shrink: 0; 
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff; cursor: pointer; transition: all 0.2s ease; outline: none;
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .circle-action-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.25); }
+        .circle-action-btn i { text-shadow: 0 2px 5px rgba(0,0,0,0.6); }
+        
+        .circle-action-btn i.pop { animation: popIcon 0.3s ease-out; }
+        @keyframes popIcon { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* STORY SECTION & INFO CARDS */
+        .sec-title { font-size: 14px; font-weight: 800; color: #fff; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+        .sec-title i.icon-blue { background: linear-gradient(135deg, #1F80E0, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 16px; }
+        .sec-title i.icon-yellow { background: linear-gradient(135deg, #f5c518, #ff9800); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 16px;}
+        
+        .m-desc { font-size: 14px; color: #e1e6eb; line-height: 1.5; margin-bottom: 6px; transition: all 0.3s ease; }
+        .m-desc.collapsed { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .read-toggle { color: #1F80E0; font-size: 13px; font-weight: 800; cursor: pointer; margin-bottom: 30px; display: inline-block; }
+
+        .detail-card { background: rgba(20, 20, 25, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 18px; margin-bottom: 30px; }
+        .d-line { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .d-line:last-child { border-bottom: none; padding-bottom: 0; }
+        .d-line:first-child { padding-top: 0; }
+        .d-lbl { color: #8e8e93; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        .d-val { color: #fff; font-size: 13px; font-weight: 700; text-align: right; max-width: 65%; }
+
+        /* SCREENSHOTS */
+        .screenshots-container { margin-bottom: 30px; }
+        .ss-grid { display: flex; flex-direction: column; gap: 12px; }
+        .ss-card { width: 100%; aspect-ratio: 16/9; padding: 1px; border-radius: 10px; background: rgba(255,255,255,0.1); overflow: hidden;}
+        .ss-card img { width: 100%; height: 100%; border-radius: 9px; object-fit: cover; display: block; background: #111; opacity: 0; transition: opacity 0.5s; }
+
+        /* RATING & REVIEW SYSTEM */
+        .divider { border-top: 1px solid rgba(255,255,255,0.1); margin: 25px 0; width: 100%; }
+        
+        .rating-section { margin-bottom: 30px; }
+        .rating-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        .pencil-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 50%; color: #fff; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; font-size: 13px; outline: none;}
+        .pencil-btn:active { transform: scale(0.9); }
+        .pencil-btn.active-pen { background: #e00073; border-color: #e00073; color: white; transform: rotate(15deg); }
+
+        .review-collapsible { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .review-collapsible.open { max-height: 400px; opacity: 1; padding-bottom: 20px; }
+
+        .review-input-box { background: rgba(20, 20, 25, 0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .user-info { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .user-avatar { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #1F80E0, #e00073); display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0;}
+        .user-name { font-weight: 800; font-size: 13px; color: #fff; }
+        
+        .stars-container { display: flex; gap: 8px; }
+        .star-btn { font-size: 22px; color: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.2s ease; }
+        .star-btn:active { transform: scale(0.9); }
+        .star-btn.active { color: #f5c518; text-shadow: 0 0 10px rgba(245, 197, 24, 0.4); }
+        
+        .review-textarea { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; resize: none; outline: none; transition: border 0.3s; height: 75px;}
+        .review-textarea:focus { border-color: rgba(31, 128, 224, 0.6); }
+
+        .post-btn { align-self: flex-end; background: linear-gradient(90deg, #1F80E0, #e00073); border: none; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; outline: none;}
+        .post-btn:active { transform: scale(0.95); }
+
+        /* YOUTUBE STYLE COMMENTS & REPLIES CSS */
+        .reviews-list { display: flex; flex-direction: column; gap: 15px; }
+        
+        .review-card, .reply-card { background: transparent; border: none; padding: 0; display: flex; flex-direction: row; gap: 10px; }
+        .review-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        
+        .u-meta { display: flex; flex-direction: row; align-items: baseline; gap: 8px; margin-bottom: 2px;}
+        .r-date { color: #8e8e93; font-size: 11px; }
+        
+        .u-stars { font-size: 9px; margin-bottom: 4px; display: flex; gap: 2px;}
+        .u-stars .active-star { color: #f5c518; }
+        .u-stars .inactive-star { color: rgba(255,255,255,0.2); }
+        
+        .r-text, .reply-text { font-size: 13px; color: #f1f1f1; line-height: 1.4; margin-bottom: 4px; word-wrap: break-word;}
+        
+        .del-rev-btn { background: transparent; border: none; color: #ff453a; font-size: 13px; cursor: pointer; padding: 5px; margin-left: auto; transition: 0.2s; opacity: 0.7; outline: none;}
+        .del-rev-btn:active { transform: scale(0.9); }
+        .no-reviews { text-align: center; color: #8e8e93; font-size: 13px; padding: 15px 0; }
+        
+        .action-reply-btn { background: transparent; border: none; color: #8e8e93; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; padding: 0; margin-bottom: 10px; width: max-content; outline: none;}
+        .action-reply-btn:active { opacity: 0.7; }
+
+        .replies-section { display: flex; flex-direction: column; gap: 12px; margin-top: 5px; }
+
+        .reply-input-box { display: none; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        .reply-input-box.active { display: flex; }
+        .reply-input { width: 100%; background: transparent; border: none; color: #fff; font-size: 13px; outline: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px;}
+        .reply-input:focus { border-bottom-color: #1F80E0; }
+        .reply-actions { display: flex; justify-content: flex-end; gap: 12px; }
+        .reply-actions button { background: transparent; border: none; font-size: 12px; font-weight: 700; cursor: pointer; outline: none;}
+        .btn-rep-cancel { color: #8e8e93; }
+        .btn-rep-submit { color: #1F80E0; }
+
+        /* CUSTOM TOAST */
+        .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(10px); color: #fff; padding: 12px 20px; border-radius: 25px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 10000; transition: top 0.4s ease; border: 1px solid rgba(255, 59, 48, 0.5); color: #ff453a; display: flex; align-items: center; gap: 10px; }
+        .toast.show { top: 40px; }
+        .toast.success { color: #32d74b; border-color: rgba(50, 215, 75, 0.5); }
+
+        .icon-gray { color: #8e8e93; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="toast" class="toast"><i id="toast-icon" class="fas fa-exclamation-triangle"></i> <span id="toast-msg">Error</span></div>
+
+    <header class="hdr" id="main-hdr">
+        <div class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></div>
+    </header>
+
+    <div id="skeleton-ui" style="position: absolute; top: 0; left: 0; width: 100%; transition: opacity 0.4s ease; z-index: 50;">
+        <div class="hero-trailer skeleton" style="border-radius: 0;"></div>
+        
+        <div class="details-container" style="padding-top: 20px;">
+            <div class="skeleton" style="width: 75%; height: 38px; margin-bottom: 12px;"></div>
+            <div class="skeleton" style="width: 45%; height: 16px; margin-bottom: 25px;"></div>
+
+            <div class="action-row">
+                <div class="skeleton" style="flex: 1; height: 46px; border-radius: 8px;"></div>
+                <div class="skeleton" style="width: 42px; height: 42px; border-radius: 10px;"></div>
+                <div class="skeleton" style="width: 42px; height: 42px; border-radius: 10px;"></div>
+            </div>
+
+            <div class="skeleton" style="width: 35%; height: 18px; margin-bottom: 12px;"></div>
+            <div class="skeleton" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 90%; height: 14px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 75%; height: 14px; margin-bottom: 30px;"></div>
+
+            <div class="skeleton detail-card" style="height: 120px; border: none; margin-bottom: 30px;"></div>
+            
+            <div class="skeleton" style="width: 35%; height: 18px; margin-bottom: 12px;"></div>
+            <div class="skeleton ss-card" style="border: none; margin-bottom: 12px;"></div>
+        </div>
+    </div>
+
+    <div id="real-ui" style="display: none; opacity: 0;">
+        <div class="hero-trailer" id="trailer-box"><div class="hero-fade"></div></div>
+        
+        <div class="details-container">
+            <h1 class="m-title" id="title"></h1>
+            
+            <div class="m-meta">
+                <span id="year"></span><span>•</span>
+                <span class="meta-rating"><i class="fas fa-star"></i><span id="rate"></span></span>
+                <span>•</span><span class="q-badge" id="q-badge">HD</span>
+            </div>
+
+            <div class="tags-wrapper" id="tags-wrapper" style="display: none;"></div>
+
+            <div id="series-selector" style="display: none; margin-bottom: 20px;">
+                <div class="season-tabs" id="season-tabs"></div>
+                <div id="episode-list"></div>
+            </div>
+
+            <div class="action-row" id="action-row">
+                <div class="btn-wrapper" id="play-wrapper">
+                    <div class="btn-glow-bg"></div><div class="btn-loader"></div>
+                    <button class="watch-btn" onclick="startPlay()"><i class="fas fa-circle-play" id="play-icon-inner"></i><span id="play-btn-text">WATCH NOW</span></button>
+                </div>
+                
+                <button class="circle-action-btn" id="mute-btn" onclick="toggleHeroMute()" style="display: none;">
+                    <i class="fas fa-volume-xmark" id="mute-icon"></i>
+                </button>
+
+                <button class="circle-action-btn" id="share-btn" onclick="shareMovie()">
+                    <i class="fas fa-share-nodes"></i>
+                </button>
+            </div>
+
+            <div class="sec-title"><i class="fas fa-book-open icon-blue"></i> Storyline</div>
+            <p class="m-desc collapsed" id="desc"></p>
+            <div class="read-toggle" id="read-toggle" style="display: none;" onclick="toggleReadMore()">Read More</div>
+
+            <div class="detail-card">
+                <div class="d-line" id="genre-line" style="display: none;"><span class="d-lbl"><i class="fas fa-clapperboard icon-gray"></i> Genre</span><span class="d-val" id="cat"></span></div>
+                
+                <div class="d-line" id="q-line"><span class="d-lbl"><i class="fas fa-display icon-gray"></i> Max Quality</span><span class="d-val" id="q-val"></span></div>
+                <div class="d-line"><span class="d-lbl"><i class="fas fa-language icon-gray"></i> Audio & Subs</span><span class="d-val" id="a-val"></span></div>
+            </div>
+
+            <div class="screenshots-container" id="screenshots-section" style="display: none;">
+                <div class="sec-title"><i class="fas fa-images icon-blue"></i> Screenshots</div>
+                <div class="ss-grid" id="ss-grid"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="rating-section" id="rating-section" style="display: none;">
+                <div class="rating-header-row">
+                    <div class="sec-title" style="margin-bottom: 0;"><i class="fas fa-comments icon-yellow"></i> Ratings & Reviews</div>
+                    <button class="pencil-btn" id="pencil-btn" onclick="toggleReviewBox()"><i class="fas fa-pen"></i></button>
+                </div>
+                
+                <div class="review-collapsible" id="review-collapsible">
+                    <div class="review-input-box">
+                        <div class="user-info">
+                            <div class="user-avatar"><i class="fas fa-user"></i></div>
+                            <span class="user-name" id="rating-user-name">User</span>
+                        </div>
+                        <div class="stars-container" id="input-stars">
+                            <i class="fas fa-star star-btn" onclick="selectStar(1)"></i>
+                            <i class="fas fa-star star-btn" onclick="selectStar(2)"></i>
+                            <i class="fas fa-star star-btn" onclick="selectStar(3)"></i>
+                            <i class="fas fa-star star-btn" onclick="selectStar(4)"></i>
+                            <i class="fas fa-star star-btn" onclick="selectStar(5)"></i>
+                        </div>
+                        <textarea class="review-textarea" id="review-text" placeholder="Share your thoughts about this..."></textarea>
+                        <button class="post-btn" onclick="submitReview()">Post Review</button>
+                    </div>
+                </div>
+
+                <div class="reviews-list" id="reviews-list">
+                    <div class="skeleton" style="width: 100%; height: 70px; border-radius: 8px;"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getDatabase, ref, get, child, set, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDe8ay0sotr15cakvFFan4EO47J8gARcc0",
+            authDomain: "nexstream-abd76.firebaseapp.com",
+            databaseURL: "https://nexstream-abd76-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "nexstream-abd76",
+            storageBucket: "nexstream-abd76.firebasestorage.app",
+            messagingSenderId: "441736257520",
+            appId: "1:441736257520:web:c1db8f9dd0922c245b0735"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db);
+        const auth = getAuth(app); 
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const movieId = urlParams.get('id');
+
+        let movieData = null;
+        let currentPlayingType = 'movie'; 
+        let currentSeasonIndex = 0;
+        
+        let currentUser = null;
+        let userProgressData = {}; 
+        let selectedReviewRating = 0;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            
+            if (!movieData) {
+                fetchDetails();
+            } else if (user) {
+                fetchUserData(); 
+            }
+
+            const playText = document.getElementById('play-btn-text');
+            const playIcon = document.getElementById('play-icon-inner');
+            
+            if(user) {
+                if(playText && playIcon) {
+                    playIcon.className = "fas fa-circle-play";
+                    if (!userProgressData.time || userProgressData.time <= 10) {
+                        playText.innerText = "WATCH NOW";
+                    }
+                }
+            } else {
+                if(playText && playIcon) {
+                    playIcon.className = "fas fa-lock";
+                    playText.innerText = "LOGIN TO WATCH";
+                }
+            }
+        });
+
+        function showToast(msg, type="error") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            toast.className = 'toast show';
+            if(type === 'success') { toast.classList.add('success'); icon.className = "fas fa-check-circle"; } 
+            else { icon.className = "fas fa-exclamation-triangle"; }
+            document.getElementById('toast-msg').innerText = msg;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        async function fetchDetails() {
+            if(!movieId) { window.location.replace('index.html'); return; }
+            try {
+                const snapshot = await get(child(dbRef, `movies/${movieId}`));
+                if(snapshot.exists()) {
+                    movieData = snapshot.val();
+                    currentPlayingType = movieData.type || 'movie';
+                    document.title = `${movieData.title} - NexStream`;
+                    
+                    if(currentUser) fetchUserData(); 
+                    fetchAllReviews(); 
+                    
+                    // Allow UI to process slightly before fading in real content to avoid blocking main thread
+                    setTimeout(() => renderPage(), 100); 
+                } else {
+                    document.getElementById('skeleton-ui').style.display = 'none';
+                    showToast("Content not found!");
+                }
+            } catch (err) { 
+                document.getElementById('skeleton-ui').style.display = 'none';
+                showToast("Network Error!");
+            }
+        }
+
+        async function fetchUserData() {
+            if(!currentUser) return;
+            try {
+                const nameSnap = await get(child(dbRef, `users/${currentUser.uid}/profile/username`));
+                const uName = nameSnap.exists() ? nameSnap.val() : (currentUser.displayName || currentUser.email.split('@')[0]);
+                document.getElementById('rating-user-name').innerText = uName;
+                document.getElementById('rating-section').style.display = 'block';
+
+                const [progSnap] = await Promise.all([
+                    get(child(dbRef, `users/${currentUser.uid}/progress/${movieId}`))
+                ]);
+
+                if(progSnap.exists()) {
+                    userProgressData = progSnap.val();
+                    if (currentPlayingType === 'movie' && userProgressData.time && userProgressData.duration && userProgressData.time > 10) {
+                        let percent = Math.floor((userProgressData.time / userProgressData.duration) * 100);
+                        if(percent > 100) percent = 100;
+                        if(percent < 1) percent = 1;
+                        document.getElementById('play-btn-text').innerText = `RESUME ${percent}%`;
+                    }
+                    if (currentPlayingType === 'series') renderEpisodeList(); 
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        window.shareMovie = async function() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: movieData ? movieData.title : 'NexStream',
+                        text: `Check out ${movieData ? movieData.title : 'this movie'} on NexStream!`,
+                        url: window.location.href
+                    });
+                } catch (err) { console.log('Share error:', err); }
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('Link copied to clipboard!', 'success');
+            }
+        }
+
+        window.toggleHeroMute = function() {
+            const icon = document.getElementById('mute-icon');
+            icon.classList.remove('pop'); void icon.offsetWidth; icon.classList.add('pop');
+
+            const ytIframe = document.getElementById('hero-yt-iframe');
+            const htmlVideo = document.getElementById('hero-html-video');
+
+            if (icon.classList.contains('fa-volume-xmark')) {
+                icon.className = 'fas fa-volume-high pop';
+                if (ytIframe) ytIframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                if (htmlVideo) htmlVideo.muted = false;
+            } else {
+                icon.className = 'fas fa-volume-xmark pop';
+                if (ytIframe) ytIframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+                if (htmlVideo) htmlVideo.muted = true;
+            }
+        }
+
+        window.toggleReviewBox = function() {
+            if(!currentUser) return showToast("Login required to review!");
+            const box = document.getElementById('review-collapsible');
+            const pencilBtn = document.getElementById('pencil-btn');
+            box.classList.toggle('open');
+            pencilBtn.classList.toggle('active-pen');
+        }
+
+        window.selectStar = function(val) {
+            selectedReviewRating = val;
+            const stars = document.querySelectorAll('#input-stars .star-btn');
+            stars.forEach((s, i) => s.classList.toggle('active', i < val));
+        }
+
+        window.submitReview = async function() {
+            if(!currentUser) return showToast("Please login first!");
+            if(selectedReviewRating === 0) return showToast("Select stars first!");
+            
+            const text = document.getElementById('review-text').value.trim();
+            if(!text) return showToast("Write something to post!");
+            
+            const reviewData = { uid: currentUser.uid, name: currentUser.displayName || currentUser.email.split('@')[0], rating: selectedReviewRating, text: text, timestamp: Date.now() };
+            try {
+                await set(ref(db, `reviews/${movieId}/${currentUser.uid}`), reviewData);
+                showToast("Review Posted!", "success");
+                document.getElementById('review-text').value = '';
+                selectStar(0); toggleReviewBox(); fetchAllReviews(); 
+            } catch(e) { showToast("Failed to post."); }
+        }
+
+        window.deleteReview = async function(reviewUid) {
+            if(!currentUser || currentUser.uid !== reviewUid) return;
+            try {
+                await remove(ref(db, `reviews/${movieId}/${reviewUid}`));
+                showToast("Review deleted.", "success");
+                fetchAllReviews();
+            } catch(e) { showToast("Delete failed."); }
+        }
+
+        window.openReplyBox = function(reviewUid, replyToName) {
+            if(!currentUser) return showToast("Please login to reply!");
+            document.querySelectorAll('.reply-input-box').forEach(el => el.classList.remove('active'));
+            const box = document.getElementById(`reply-box-${reviewUid}`);
+            box.classList.add('active');
+            const input = box.querySelector('.reply-input');
+            if(replyToName && replyToName.trim() !== '') { input.value = `@${replyToName} `; } 
+            else { input.value = ""; }
+            input.focus();
+        }
+
+        window.closeReplyBox = function(reviewUid) { document.getElementById(`reply-box-${reviewUid}`).classList.remove('active'); }
+
+        window.submitReply = async function(reviewUid) {
+            if(!currentUser) return;
+            const box = document.getElementById(`reply-box-${reviewUid}`);
+            const text = box.querySelector('.reply-input').value.trim();
+            if(!text) return showToast("Write a reply first!");
+            
+            const replyId = 'rep_' + Date.now();
+            const replyData = { uid: currentUser.uid, name: currentUser.displayName || currentUser.email.split('@')[0], text: text, timestamp: Date.now() };
+            try {
+                await set(ref(db, `reviews/${movieId}/${reviewUid}/replies/${replyId}`), replyData);
+                showToast("Reply Posted!", "success");
+                closeReplyBox(reviewUid); fetchAllReviews();
+            } catch(e) { showToast("Failed to reply."); }
+        }
+
+        window.deleteReply = async function(reviewUid, replyId) {
+            if(!currentUser) return;
+            try {
+                await remove(ref(db, `reviews/${movieId}/${reviewUid}/replies/${replyId}`));
+                showToast("Reply deleted.", "success"); fetchAllReviews();
+            } catch(e) { showToast("Delete failed."); }
+        }
+
+        async function fetchAllReviews() {
+            try {
+                const snap = await get(child(dbRef, `reviews/${movieId}`));
+                const listEl = document.getElementById('reviews-list');
+                
+                if(snap.exists()) {
+                    let revs = Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp);
+                    const uidsToFetch = new Set();
+                    revs.forEach(r => {
+                        uidsToFetch.add(r.uid);
+                        if(r.replies) Object.values(r.replies).forEach(rep => uidsToFetch.add(rep.uid));
+                    });
+
+                    const liveUsernames = {};
+                    await Promise.all(Array.from(uidsToFetch).map(async (uid) => {
+                        try {
+                            const uSnap = await get(child(dbRef, `users/${uid}/profile/username`));
+                            if(uSnap.exists()) liveUsernames[uid] = uSnap.val();
+                        } catch(e) {}
+                    }));
+
+                    listEl.innerHTML = revs.map(r => {
+                        const displayName = liveUsernames[r.uid] || r.name; 
+                        const d = new Date(r.timestamp).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+                        const starsHtml = Array(5).fill(0).map((_,i) => `<i class="fas fa-star ${i < r.rating ? 'active-star' : 'inactive-star'}"></i>`).join('');
+                        const delBtn = (currentUser && currentUser.uid === r.uid) ? `<button class="del-rev-btn" onclick="deleteReview('${r.uid}')"><i class="fas fa-trash"></i></button>` : '';
+                        
+                        let repliesHtml = '';
+                        if (r.replies) {
+                            const reps = Object.entries(r.replies).map(([k,v]) => ({id: k, ...v})).sort((a,b) => a.timestamp - b.timestamp);
+                            repliesHtml = `<div class="replies-section">` + reps.map(rep => {
+                                const repDisplayName = liveUsernames[rep.uid] || rep.name;
+                                const repDelBtn = (currentUser && currentUser.uid === rep.uid) ? `<button class="del-rev-btn" style="font-size:12px; margin-left:auto; padding:0;" onclick="deleteReply('${r.uid}', '${rep.id}')"><i class="fas fa-trash"></i></button>` : '';
+                                return `
+                                <div class="reply-card">
+                                    <div class="user-avatar" style="width:28px; height:28px; font-size:12px;"><i class="fas fa-user"></i></div>
+                                    <div class="review-content">
+                                        <div class="u-meta">
+                                            <span class="user-name" style="font-size:13px;">${repDisplayName}</span>
+                                            <span class="r-date">${new Date(rep.timestamp).toLocaleDateString('en-IN')}</span>
+                                            ${repDelBtn}
+                                        </div>
+                                        <p class="reply-text">${rep.text}</p>
+                                        <button class="action-reply-btn" onclick="openReplyBox('${r.uid}', '${repDisplayName}')">Reply</button>
+                                    </div>
+                                </div>
+                            `}).join('') + `</div>`;
+                        }
+
+                        const replyInputBox = `
+                            <div class="reply-input-box" id="reply-box-${r.uid}">
+                                <input type="text" class="reply-input" placeholder="Add a reply...">
+                                <div class="reply-actions">
+                                    <button class="btn-rep-cancel" onclick="closeReplyBox('${r.uid}')">Cancel</button>
+                                    <button class="btn-rep-submit" onclick="submitReply('${r.uid}')">Reply</button>
+                                </div>
+                            </div>`;
+
+                        return `
+                        <div class="review-card">
+                            <div class="user-avatar"><i class="fas fa-user"></i></div>
+                            <div class="review-content">
+                                <div class="u-meta">
+                                    <span class="user-name">${displayName}</span>
+                                    <span class="r-date">${d}</span>
+                                    ${delBtn}
+                                </div>
+                                <div class="u-stars">${starsHtml}</div>
+                                <p class="r-text">${r.text}</p>
+                                <button class="action-reply-btn" onclick="openReplyBox('${r.uid}', '')"><i class="fas fa-reply"></i> Reply</button>
+                                ${replyInputBox}
+                                ${repliesHtml}
+                            </div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    listEl.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to share your thoughts!</div>';
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        function extractHighestQuality() {
+            let availableLinks = [];
+            if (currentPlayingType === 'series' && movieData.seasons && movieData.seasons[0].episodes && movieData.seasons[0].episodes[0].video_links) availableLinks = movieData.seasons[0].episodes[0].video_links;
+            else if (movieData.video_links) availableLinks = movieData.video_links;
+
+            let maxQ = "HD";
+            if (availableLinks.length > 0) {
+                const labels = availableLinks.map(l => l.label.toLowerCase());
+                if (labels.some(l => l.includes('4k') || l.includes('2160'))) maxQ = "4K";
+                else if (labels.some(l => l.includes('1080'))) maxQ = "1080p";
+                else if (labels.some(l => l.includes('720'))) maxQ = "720p";
+                else if (labels.some(l => l.includes('480'))) maxQ = "480p";
+                else maxQ = availableLinks[0].label;
+            }
+            return maxQ;
+        }
+
+        function extractAudioInfo() {
+            let availableAudio = [];
+            if (currentPlayingType === 'series' && movieData.seasons && movieData.seasons[0].episodes && movieData.seasons[0].episodes[0].audio_links) availableAudio = movieData.seasons[0].episodes[0].audio_links;
+            else if (movieData.audio_links) availableAudio = movieData.audio_links;
+            
+            if (availableAudio.length > 0) {
+                let labels = availableAudio.map(a => a.label);
+                if (labels.length > 2) {
+                    return `${labels[0]}, ${labels[1]} <span style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 4px; font-weight: 800; color: #8e8e93;">+${labels.length - 2} More</span>`;
+                }
+                return labels.join(', ');
+            }
+            return "Hindi, English";
+        }
+
+        window.toggleTags = function() {
+            const wrapper = document.getElementById('tags-wrapper');
+            const isExpanded = wrapper.classList.toggle('expanded');
+            const btn = document.getElementById('tag-more-btn');
+            const hiddenCount = document.querySelectorAll('.tag-pill.hidden-tag').length;
+            if (isExpanded) { btn.innerText = "Show Less"; } 
+            else { btn.innerText = `+${hiddenCount} More`; }
+        }
+
+        // PERFECT ZERO-CLS TRANSITION AND LAYOUT INJECTION
+        function renderPage() {
+            // STEP 1: Populate Real Data
+            document.getElementById('title').innerText = movieData.title || "Unknown Title";
+            document.getElementById('year').innerText = movieData.year || "2026";
+            
+            let rawRate = movieData.rating || "N/A";
+            if(rawRate !== "N/A") {
+                let num = parseFloat(rawRate);
+                if(!isNaN(num)) { rawRate = num.toFixed(1); }
+            }
+            document.getElementById('rate').innerText = rawRate;
+            
+            const genreLine = document.getElementById('genre-line');
+            if (movieData.genres && movieData.genres.trim() !== "") {
+                document.getElementById('cat').innerText = movieData.genres;
+                genreLine.style.display = 'flex';
+            } else { genreLine.style.display = 'none'; }
+
+            if (!currentUser) {
+                document.getElementById('play-icon-inner').className = "fas fa-lock";
+                document.getElementById('play-btn-text').innerText = "LOGIN TO WATCH";
+            }
+
+            const detectedQuality = extractHighestQuality();
+            document.getElementById('q-badge').innerText = detectedQuality;
+            document.getElementById('q-val').innerText = detectedQuality;
+            document.getElementById('a-val').innerHTML = extractAudioInfo(); 
+
+            if (movieData.tags && movieData.tags.length > 0) {
+                const tagWrapper = document.getElementById('tags-wrapper');
+                tagWrapper.style.display = 'flex';
+                let tagsHtml = '';
+                movieData.tags.forEach((tag, index) => {
+                    const hiddenClass = index >= 3 ? 'hidden-tag' : '';
+                    tagsHtml += `<span class="tag-pill ${hiddenClass}">${tag}</span>`;
+                });
+                if (movieData.tags.length > 3) {
+                    tagsHtml += `<span class="tag-more-btn" id="tag-more-btn" onclick="toggleTags()">+${movieData.tags.length - 3} More</span>`;
+                }
+                tagWrapper.innerHTML = tagsHtml;
+            }
+
+            const descEl = document.getElementById('desc');
+            descEl.innerText = movieData.description || "No description available.";
+            if(descEl.scrollHeight > descEl.clientHeight) {
+                document.getElementById('read-toggle').style.display = 'inline-block';
+            }
+
+            const trailerBox = document.getElementById('trailer-box');
+            const muteBtn = document.getElementById('mute-btn');
+            
+            if (movieData.trailer_url) {
+                if (movieData.trailer_url.includes('youtube.com') || movieData.trailer_url.includes('youtu.be')) {
+                    let videoId = movieData.trailer_url.includes('v=') ? movieData.trailer_url.split('v=')[1].split('&')[0] : movieData.trailer_url.split('youtu.be/')[1].split('?')[0];
+                    trailerBox.innerHTML = `<iframe id="hero-yt-iframe" src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&playsinline=1" allow="autoplay; encrypted-media"></iframe><div class="hero-fade"></div>`;
+                } else {
+                    trailerBox.innerHTML = `<video id="hero-html-video" src="${movieData.trailer_url}" autoplay muted loop playsinline></video><div class="hero-fade"></div>`;
+                }
+                muteBtn.style.display = 'flex';
+                document.getElementById('mute-icon').className = 'fas fa-volume-xmark';
+            } else if (movieData.backdrop) {
+                // LAZY LOAD FADE IN
+                trailerBox.innerHTML = `<img src="${movieData.backdrop}" alt="backdrop" style="object-fit: cover; width:100%; height:100%; opacity:0;" onload="this.classList.add('fade-in-content')"><div class="hero-fade"></div>`;
+                muteBtn.style.display = 'none';
+            } else {
+                muteBtn.style.display = 'none';
+            }
+
+            if (movieData.screenshots && movieData.screenshots.length > 0) {
+                document.getElementById('screenshots-section').style.display = 'block';
+                document.getElementById('ss-grid').innerHTML = movieData.screenshots.map(url => `<div class="ss-card"><img src="${url}" loading="lazy" onload="this.classList.add('fade-in-content')"></div>`).join('');
+            }
+
+            if(currentPlayingType === 'series' && movieData.seasons) {
+                document.getElementById('play-wrapper').style.display = 'none';
+                document.getElementById('series-selector').style.display = 'block';
+                renderSeasonTabs(); renderEpisodeList();
+            } else if (currentPlayingType === 'movie') {
+                if(!movieData.video_links || movieData.video_links.length === 0) {
+                    document.getElementById('play-btn-text').innerText = "COMING SOON";
+                    document.getElementById('play-wrapper').style.opacity = "0.5";
+                }
+            }
+
+            // STEP 2: Swap Skeleton with Real UI Seamlessly
+            const skeletonUi = document.getElementById('skeleton-ui');
+            const realUi = document.getElementById('real-ui');
+            
+            // Render the real layout invisibly to calculate height, then crossfade
+            realUi.style.display = 'block'; 
+            skeletonUi.style.opacity = '0'; // Fade out skeleton
+            
+            // Force browser reflow
+            void realUi.offsetWidth;
+            
+            realUi.classList.add('fade-in-content'); // Fade in real content
+            
+            // Clean up skeleton after transition finishes
+            setTimeout(() => {
+                skeletonUi.style.display = 'none';
+            }, 400);
+        }
+
+        window.changeSeason = function(index) {
+            currentSeasonIndex = index;
+            renderSeasonTabs(); renderEpisodeList();
+        }
+
+        function renderSeasonTabs() {
+            document.getElementById('season-tabs').innerHTML = movieData.seasons.map((s, i) => `<button class="season-btn ${i === currentSeasonIndex ? 'active' : ''}" onclick="window.changeSeason(${i})">${s.season_title}</button>`).join('');
+        }
+
+        function renderEpisodeList() {
+            const epListDiv = document.getElementById('episode-list');
+            const season = movieData.seasons[currentSeasonIndex];
+            if(!season || !season.episodes) return;
+
+            epListDiv.classList.remove('slide-enter'); void epListDiv.offsetWidth; epListDiv.classList.add('slide-enter');
+
+            const fallbackImg = movieData.backdrop || movieData.poster || '';
+            epListDiv.innerHTML = season.episodes.map((ep, i) => {
+                const epImg = ep.ep_thumb ? ep.ep_thumb : fallbackImg;
+                const epDesc = ep.ep_desc ? `<p class="ep-desc-text">${ep.ep_desc}</p>` : '';
+                
+                let progressHtml = '';
+                const epKey = `s${currentSeasonIndex}_e${i}`;
+                if (userProgressData[epKey] && userProgressData[epKey].duration) {
+                    const percent = Math.min((userProgressData[epKey].time / userProgressData[epKey].duration) * 100, 100);
+                    if(percent > 1) progressHtml = `<div class="ep-progress-bg" style="display:block;"><div class="ep-progress-fill" style="width: ${percent}%;"></div></div>`;
+                }
+
+                // Added fade-in class for thumbnail image loading
+                return `
+                <div class="ep-card" onclick="window.startEpisode(${i})">
+                    <div class="ep-thumb"><img src="${epImg}" loading="lazy" onload="this.classList.add('fade-in-content')"><i class="fas fa-play-circle play-icon"></i>${progressHtml}</div>
+                    <div class="ep-info"><span class="ep-num">Episode ${i + 1}</span><span class="ep-title">${ep.ep_title}</span>${epDesc}</div>
+                </div>`;
+            }).join('');
+        }
+
+        window.toggleReadMore = function() {
+            const desc = document.getElementById('desc');
+            desc.classList.toggle('collapsed');
+            document.getElementById('read-toggle').innerText = desc.classList.contains('collapsed') ? "Read More" : "Read Less";
+        }
+
+        window.startPlay = function() {
+            const btnWrapper = document.getElementById('play-wrapper');
+            btnWrapper.classList.add('loading');
+            
+            if(!currentUser) {
+                setTimeout(() => {
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                }, 1500);
+                return;
+            }
+
+            if(!movieData.video_links || movieData.video_links.length === 0) {
+                btnWrapper.classList.remove('loading');
+                return showToast("Video link not available yet!");
+            }
+            
+            setTimeout(() => { window.location.href = `player.html?id=${movieId}`; }, 1500); 
+        }
+
+        window.startEpisode = function(epIndex) {
+            if(!currentUser) {
+                showToast("Please login to watch.");
+                setTimeout(() => {
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                }, 1500);
+                return;
+            }
+
+            const ep = movieData.seasons[currentSeasonIndex].episodes[epIndex];
+            if(!ep.video_links || ep.video_links.length === 0) return showToast("Video link missing for this episode!");
+            window.location.href = `player.html?id=${movieId}&s=${currentSeasonIndex}&e=${epIndex}`;
+        }
+
+    </script>
+</body>
+</html>
